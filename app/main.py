@@ -1,7 +1,13 @@
-from fastapi import FastAPI, APIRouter, HTTPException, Query
+from fastapi import FastAPI, APIRouter, HTTPException, Query, Request
 from .data.mock_data import TEST_DATA
 from .schemas.record import Record, RecordSearchResults, RecordCreate
 from typing import Optional
+from fastapi.templating import Jinja2Templates
+from pathlib import Path
+
+BASE_PATH = Path(__file__).resolve().parent
+TEMPLATES = Jinja2Templates(directory = str(BASE_PATH / "templates"))
+
 
 app = FastAPI(title="BoilerPlate API", openapi_url="/openapi.json")
 
@@ -9,10 +15,13 @@ api_router = APIRouter()
 
 
 @api_router.get("/", status_code=200)
-def root() -> dict:
+def root(request: Request) -> dict:
     """ Root path """
 
-    return {"msg": "Hello World"}
+    return TEMPLATES.TemplateResponse(
+        "index.html",
+        { "request": request, "records": TEST_DATA} 
+    )
 
 
 @api_router.get("/record/{record_id}", status_code=200, response_model = Record)
